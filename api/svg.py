@@ -26,6 +26,10 @@ def reddit(subreddit_name):
     except:
         return 0
 
+def json_dump(file, object):    
+    with open(file, "w", encoding="utf-8") as f:
+        json.dump(object, f)
+
 with open(FILE, "r") as f:
     pop_map = json.load(f)
 
@@ -35,9 +39,9 @@ while True:
         break
     req.raise_for_status()
 
-b = ElementTree.fromstring(str(req.content, encoding="utf-8"))
+tree = ElementTree.fromstring(str(req.content, encoding="utf-8"))
 output = []
-for subreddit in b.find("*/[@id='nodes']/*[@id='Gay-92']", namespaces={None: "http://www.w3.org/2000/svg"}):
+for subreddit in tree.find("*/[@id='nodes']/*[@id='Gay-92']", namespaces={None: "http://www.w3.org/2000/svg"}):
     attrs = dict(subreddit.attrib)
     for x in ['cx', 'cy', 'r']:
         attrs[x] = float(attrs[x])
@@ -57,8 +61,5 @@ for subreddit in output:
         
 output.sort(key=lambda x: x['r'], reverse=True)
 
-with open(FILE, "w") as f:
-    json.dump(pop_map, f)
-
-with open("gs.json", "w") as f:
-    json.dump(output, f)
+json_dump(FILE, pop_map)
+json_dump("gs.json", output)
