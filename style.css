@@ -50,3 +50,7 @@
       stroke: dimgrey;
       stroke-width: 1px;
   }
+
+  line {
+      stroke: grey;
+  }

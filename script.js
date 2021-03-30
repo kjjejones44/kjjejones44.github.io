@@ -1,11 +1,18 @@
 (function () {
     let DATASET = null
+    let LINKSET = null
     d3.json("https://kjjejones44.github.io/api/gs.json").then(result => {
         DATASET = result;
         drawPage();
     })
+    
+    d3.json("https://kjjejones44.github.io/api/links.json").then(result => {
+        LINKSET = result;
+        drawPage();
+    })
 
     function drawPage() {
+        if (!DATASET || !LINKSET) return
         const padding = 60;
         const h = Math.min(window.innerHeight, window.innerWidth) - padding;
         const w = Math.max(window.innerWidth - padding, h);
@@ -39,6 +46,15 @@
             .append("div")
             .attr("class", "tooltip")
             .style("opacity", 0);
+
+        svg.selectAll("line")
+            .data(LINKSET)
+            .enter()
+            .append("line")
+            .attr("x1", d => xScale(d[0]['x']))
+            .attr("y1", d => yScale(d[0]['y']))
+            .attr("x2", d => xScale(d[1]['x']))
+            .attr("y2", d => yScale(d[1]['y']))
 
         svg.selectAll("circle")
             .data(DATASET)

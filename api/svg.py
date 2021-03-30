@@ -63,3 +63,64 @@ output.sort(key=lambda x: x['r'], reverse=True)
 
 json_dump(FILE, pop_map)
 json_dump("gs.json", output)
+
+# import json
+# import requests
+
+# SPLIT = " -> "
+
+# with open("gs.json", "r") as f:
+#     subs = json.load(f)
+
+# sub_ids = [x['id'] for x in subs]
+# sub_dict = {x['id']:x for x in subs}
+
+
+# while True:
+#     req = requests.get("https://anvaka.github.io/map-of-reddit-data/graph.svg")
+#     if req.status_code == 200:
+#         break
+#     req.raise_for_status()
+
+# with open("r.dot", "r", encoding="utf-8") as f:
+#     lines = [x for x in f.readlines() if SPLIT in x]
+
+# links = set()
+# for x in lines:
+#     sub_1 = x.split(SPLIT, 1)[0].strip("\"")
+#     sub_2 = x.split(SPLIT, 1)[1].split(" [")[0].strip("\"")
+#     sub_list = [sub_1, sub_2]
+#     if all(x in sub_dict for x in sub_list):
+#         sub_list.sort(key=lambda x: sub_dict[x]["r"])
+#         links.add(tuple(sub_list))
+
+# links = list(list(x) for x in links)
+
+# links.sort(key=lambda x: sub_dict[x[1]]['r'])
+# links.sort(key=lambda x: sub_dict[x[0]]['r'])
+
+# new = []
+# connected_count = {}
+# for link in links:
+#     for sub in link:
+#         if not sub in connected_count:
+#             connected_count[sub] = 0
+#         else:
+#             connected_count[sub] = connected_count[sub] + 1
+#     link.sort(key=lambda x: connected_count[x])
+
+# new = []
+# for link in links:
+#     if link[0] not in [x[0] for x in new]:
+#         new.append(link)
+
+# new = list(list(x) for x in set(tuple(x) for x in new))
+
+# for link in new:    
+#     for i in range(len(link)):
+#         sub = sub_dict[link[i]]
+#         link[i] = {"x": sub['cx'], "y": sub['cy']}
+        
+# with open("links2.json", "w") as f:
+#     json.dump(new, f)
+
