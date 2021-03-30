@@ -1,0 +1,52 @@
+  :root {
+      --accent: coral;
+  }
+
+  body {
+      box-sizing: border-box;
+      margin: 0px;
+      padding: 0px;
+      overflow-x: hidden;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background-color: grey;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100vw;
+      height: 100vh;
+      flex-direction: column;
+  }
+
+  text {
+      user-select: none;
+      font-weight: bold;
+  }
+
+  #chart {
+      background-color: white;
+      border-radius: 1vh 1vh 0 0;
+      margin: 1vh;
+      box-shadow: 0 0 10px black;
+      border-top: 1vh solid var(--accent)
+  }
+
+  div.tooltip {
+      position: absolute;
+      text-align: center;
+      padding: 0.5vh;
+      pointer-events: none;
+      background: white;
+      border: 0.5vh double var(--accent);
+      border-radius: 0.5vh;
+      font-size: 2vh
+  }
+
+  svg {
+      shape-rendering: geometricPrecision
+  }
+
+  circle {
+      stroke: dimgrey;
+      stroke-width: 1px;
+  }
