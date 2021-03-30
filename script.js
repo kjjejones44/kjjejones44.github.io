@@ -68,7 +68,7 @@
             .data(DATASET)
             .enter()
             .append("a")
-            .attr("xlink:href", d => `http://www.reddit.com/r/${d.id.trim()}`)
+            .attr("href", d => `http://www.reddit.com/r/${d.id.trim()}`)
             .attr("target", "_blank")
             .append("circle")
             .attr("cx", d => xScale(d.cx))
