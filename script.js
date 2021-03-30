@@ -33,7 +33,7 @@
             .domain([d3.min(DATASET, d => d.r), d3.max(DATASET, d => d.r)])
             .range([1, Math.min(h, w) / 30]);
 
-        const div = d3.select("div.tooltip").node() ?
+        const div = document.querySelector("div.tooltip") ?
             d3.select("div.tooltip") :
             d3.select("body")
             .append("div")
