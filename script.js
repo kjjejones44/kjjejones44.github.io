@@ -1,6 +1,8 @@
 (function () {
+
     let DATASET = null
     let LINKSET = null
+
     d3.json("https://kjjejones44.github.io/api/gs.json").then(result => {
         DATASET = result;
         drawPage();
@@ -10,35 +12,39 @@
         LINKSET = result;
         drawPage();
     })
+    
+    const generate_domain = (func) =>  [d3.min(DATASET, func), d3.max(DATASET, func)]
 
     function drawPage() {
         if (!DATASET || !LINKSET) return
-        const padding = 60;
-        const h = Math.min(window.innerHeight, window.innerWidth) - padding;
-        const w = Math.max(window.innerWidth - padding, h);
+        const padding = Math.round(Math.min(window.innerHeight, window.innerWidth) / 30)
+        const height = window.innerHeight - 2 * padding
+        const width = window.innerWidth - 2 * padding
 
         const chart = document.getElementById("chart");
         while (chart.firstChild) chart.removeChild(chart.firstChild);
 
         const svg = d3.select("#chart")
             .append("svg")
-            .attr("width", w)
-            .attr("height", h);
+            .attr("width", width)
+            .attr("height", height);
+            
+        const svg_box = svg.node().getBoundingClientRect()
 
         const xScale = d3.scaleLinear()
-            .domain([d3.min(DATASET, d => d.cx), d3.max(DATASET, d => d.cx)])
-            .range([1.5 * padding, w - padding]);
+            .domain(generate_domain(d => d.cx))
+            .range([padding, svg_box.width - padding]);
 
         const yScale = d3.scaleLinear()
-            .domain([d3.min(DATASET, d => d.cy), d3.max(DATASET, d => d.cy)])
-            .range([h - padding, padding]);
+            .domain(generate_domain(d => d.cy))
+            .range([padding, svg_box.height - padding]);
 
         const cScale = d3.scaleSequential(d3.interpolateOranges)
-            .domain([d3.min(DATASET, d => d.pop), d3.max(DATASET, d => d.pop)]);
+            .domain(generate_domain(d => d.pop))
 
         const rScale = d3.scaleLinear()
-            .domain([d3.min(DATASET, d => d.r), d3.max(DATASET, d => d.r)])
-            .range([1, Math.min(h, w) / 30]);
+            .domain(generate_domain(d => d.r))
+            .range([1, Math.min(height, width) / 30]);
 
         const div = document.querySelector("div.tooltip") ?
             d3.select("div.tooltip") :
@@ -68,14 +74,12 @@
             .attr("r", d => rScale(d.r))
             .attr("fill", d => cScale(d.pop))
             .on("mouseover", d => {
-                const tooltip = document.querySelector(".tooltip:last-of-type")
-                const top = d3.event.pageY - tooltip.offsetHeight
-                const left = d3.event.pageX - tooltip.offsetWidth * ((d3.event.pageX - 2 * padding) / (w - 2.5 * padding))
-                div
-                    .style("opacity", 1)
-                    .html(`<strong>${d.id}</strong>`)
-                    .style("top", `${top}px`)
+                div.html(`<strong>${d.id}</strong>`)
+                const top =  Math.round(yScale(d["cy"]) + svg_box.top - rScale(d["r"]) - div.node().offsetHeight)
+                const left = Math.round(xScale(d["cx"]) + svg_box.left - (div.node().offsetWidth / ( svg_box.width / xScale(d["cx"]))))
+                div .style("top", `${top}px`)
                     .style("left", `${left}px`)
+                    .style("opacity", 1)
             })
             .on("mouseout", () => div.style("opacity", 0));
     };

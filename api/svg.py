@@ -5,6 +5,7 @@ import requests
 import praw
 
 FILE = "pop.json"
+SPLIT = " -> "
 
 # www.reddit.com/r/dataisbeautiful/mfmlho/
 
@@ -39,88 +40,57 @@ while True:
         break
     req.raise_for_status()
 
+sub_dict = {}
+
 tree = ElementTree.fromstring(str(req.content, encoding="utf-8"))
-output = []
-for subreddit in tree.find("*/[@id='nodes']/*[@id='Gay-92']", namespaces={None: "http://www.w3.org/2000/svg"}):
-    attrs = dict(subreddit.attrib)
-    for x in ['cx', 'cy', 'r']:
-        attrs[x] = float(attrs[x])
-    output.append(attrs)
+ns = {None: "http://www.w3.org/2000/svg"}
+for node in tree.findall("*/[@id='nodes']", namespaces=ns):
+    for subreddit in node.findall("*/", namespaces=ns):
+        attrs = dict(subreddit.attrib)
+        attrs["id"] = attrs["id"].strip("_")
+        for line in ['cx', 'cy', 'r']:
+            attrs[line] = float(attrs[line])
+        sub_dict[attrs["id"]] = attrs
 
-min_x = min(x['cx'] for x in output)
-min_y = min(x['cy'] for x in output)
-max_x = max(x['cx'] for x in output)
-max_y = max(x['cy'] for x in output)
+gay_ids = [x.attrib["id"].strip("_") for x in tree.find("*/[@id='nodes']/*[@id='Gay-92']", namespaces=ns)]
+gay_subs = [sub_dict[x] for x in gay_ids]
+gay_subs.sort(key=lambda x: x['r'], reverse=True)
 
-for subreddit in output:
+
+min_x = min(x['cx'] for x in gay_subs)
+min_y = min(x['cy'] for x in gay_subs)
+max_x = max(x['cx'] for x in gay_subs)
+max_y = max(x['cy'] for x in gay_subs)
+
+for subreddit in gay_subs:
     subreddit['cx'] = 100 * ((subreddit['cx'] - min_x) / (max_x - min_x))
     subreddit['cy'] = 100 * ((subreddit['cy'] - min_y) / (max_y - min_y))
     subreddit['pop'] = get_pop_value(subreddit['id'])
     for key in ["cx", "cy", "r", "pop"]:
         subreddit[key] = round(subreddit[key], 5)
         
-output.sort(key=lambda x: x['r'], reverse=True)
-
 json_dump(FILE, pop_map)
-json_dump("gs.json", output)
+json_dump("gs.json", gay_subs)
 
-# import json
-# import requests
+with open("r.dot", "r", encoding="utf-8") as f:
+    dot_lines = [x for x in f.readlines() if SPLIT in x]
 
-# SPLIT = " -> "
+links = set()
+for line in dot_lines:
+    sub_1 = line.split(SPLIT, 1)[0].strip("\"")
+    sub_2 = line.split(SPLIT, 1)[1].split(" [")[0].strip("\"")
+    sub_list = [sub_1, sub_2]
+    if all(x in gay_ids for x in sub_list):
+        sub_list.sort(key=lambda x: sub_dict[x]["r"])
+        links.add(tuple(sub_list))
 
-# with open("gs.json", "r") as f:
-#     subs = json.load(f)
+links = list(list(x) for x in links)
 
-# sub_ids = [x['id'] for x in subs]
-# sub_dict = {x['id']:x for x in subs}
-
-
-# while True:
-#     req = requests.get("https://anvaka.github.io/map-of-reddit-data/graph.svg")
-#     if req.status_code == 200:
-#         break
-#     req.raise_for_status()
-
-# with open("r.dot", "r", encoding="utf-8") as f:
-#     lines = [x for x in f.readlines() if SPLIT in x]
-
-# links = set()
-# for x in lines:
-#     sub_1 = x.split(SPLIT, 1)[0].strip("\"")
-#     sub_2 = x.split(SPLIT, 1)[1].split(" [")[0].strip("\"")
-#     sub_list = [sub_1, sub_2]
-#     if all(x in sub_dict for x in sub_list):
-#         sub_list.sort(key=lambda x: sub_dict[x]["r"])
-#         links.add(tuple(sub_list))
-
-# links = list(list(x) for x in links)
-
-# links.sort(key=lambda x: sub_dict[x[1]]['r'])
-# links.sort(key=lambda x: sub_dict[x[0]]['r'])
-
-# new = []
-# connected_count = {}
-# for link in links:
-#     for sub in link:
-#         if not sub in connected_count:
-#             connected_count[sub] = 0
-#         else:
-#             connected_count[sub] = connected_count[sub] + 1
-#     link.sort(key=lambda x: connected_count[x])
-
-# new = []
-# for link in links:
-#     if link[0] not in [x[0] for x in new]:
-#         new.append(link)
-
-# new = list(list(x) for x in set(tuple(x) for x in new))
-
-# for link in new:    
-#     for i in range(len(link)):
-#         sub = sub_dict[link[i]]
-#         link[i] = {"x": sub['cx'], "y": sub['cy']}
+for link in links:    
+    for i in range(len(link)):
+        sub = sub_dict[link[i]]
+        link[i] = {"x": sub['cx'], "y": sub['cy']}
         
-# with open("links2.json", "w") as f:
-#     json.dump(new, f)
+with open("links.json", "w") as f:
+    json.dump(links, f)
 
