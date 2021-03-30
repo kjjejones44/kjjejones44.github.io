@@ -7,19 +7,19 @@
         DATASET = result;
         drawPage();
     })
-    
+
     d3.json("https://kjjejones44.github.io/api/links.json").then(result => {
         LINKSET = result;
         drawPage();
     })
-    
-    const generate_domain = (func) =>  [d3.min(DATASET, func), d3.max(DATASET, func)]
+
+    const generate_domain = (func) => [d3.min(DATASET, func), d3.max(DATASET, func)]
 
     function drawPage() {
         if (!DATASET || !LINKSET) return
         const padding = Math.round(Math.min(window.innerHeight, window.innerWidth) / 30)
-        const height = window.innerHeight - 2 * padding
-        const width = window.innerWidth - 2 * padding
+        const height = window.innerHeight - padding
+        const width = window.innerWidth - padding
 
         const chart = document.getElementById("chart");
         while (chart.firstChild) chart.removeChild(chart.firstChild);
@@ -28,23 +28,23 @@
             .append("svg")
             .attr("width", width)
             .attr("height", height);
-            
+
         const svg_box = svg.node().getBoundingClientRect()
 
         const xScale = d3.scaleLinear()
             .domain(generate_domain(d => d.cx))
-            .range([padding, svg_box.width - padding]);
+            .rangeRound([padding, svg_box.width - padding]);
 
         const yScale = d3.scaleLinear()
             .domain(generate_domain(d => d.cy))
-            .range([padding, svg_box.height - padding]);
+            .rangeRound([padding, svg_box.height - padding]);
 
         const cScale = d3.scaleSequential(d3.interpolateOranges)
             .domain(generate_domain(d => d.pop))
 
         const rScale = d3.scaleLinear()
             .domain(generate_domain(d => d.r))
-            .range([1, Math.min(height, width) / 30]);
+            .rangeRound([1, Math.min(height, width) / 30]);
 
         const div = document.querySelector("div.tooltip") ?
             d3.select("div.tooltip") :
@@ -53,7 +53,8 @@
             .attr("class", "tooltip")
             .style("opacity", 0);
 
-        svg.selectAll("line")
+        svg.append("g")
+            .selectAll("line")
             .data(LINKSET)
             .enter()
             .append("line")
@@ -62,7 +63,8 @@
             .attr("x2", d => xScale(d[1]['x']))
             .attr("y2", d => yScale(d[1]['y']))
 
-        svg.selectAll("circle")
+        svg.append("g")
+            .selectAll("circle")
             .data(DATASET)
             .enter()
             .append("a")
@@ -75,9 +77,9 @@
             .attr("fill", d => cScale(d.pop))
             .on("mouseover", d => {
                 div.html(`<strong>${d.id}</strong>`)
-                const top =  Math.round(yScale(d["cy"]) + svg_box.top - rScale(d["r"]) - div.node().offsetHeight)
-                const left = Math.round(xScale(d["cx"]) + svg_box.left - (div.node().offsetWidth / ( svg_box.width / xScale(d["cx"]))))
-                div .style("top", `${top}px`)
+                const top = (yScale(d["cy"]) + svg_box.top - rScale(d["r"]) - div.node().offsetHeight)
+                const left = (xScale(d["cx"]) + svg_box.left - (div.node().offsetWidth / (svg_box.width / xScale(d["cx"]))))
+                div.style("top", `${top}px`)
                     .style("left", `${left}px`)
                     .style("opacity", 1)
             })
