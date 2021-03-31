@@ -2,6 +2,10 @@
       --accent: coral;
   }
 
+  html {
+      overflow: hidden;
+  }
+
   body {
       box-sizing: border-box;
       font-family: Arial, sans-serif;
@@ -9,20 +13,18 @@
       background-color: grey;
       margin: 0px;
       padding: 0px;
-  }
-
-  text {
       user-select: none;
       font-weight: bold;
   }
 
-  #container { 
-    position: fixed;
-    left: 0;
-    top: 0;
-    width: 100vw;
-    height: 100vh;
-    display: flex;}
+  #container {
+      position: fixed;
+      left: 0;
+      top: 0;
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+  }
 
   #chart {
       background-color: white;
