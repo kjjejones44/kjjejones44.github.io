@@ -17,19 +17,34 @@
 
     function drawPage() {
         if (!DATASET || !LINKSET) return
-        const padding = Math.round(Math.min(window.innerHeight, window.innerWidth) / 30)
-        const height = window.innerHeight - padding
-        const width = window.innerWidth - padding
+        const vh = window.innerHeight / 100
+        const padding = vh * 5
+        const height = window.innerHeight - 4 * vh 
+        const width = window.innerWidth - 2 * vh
 
         const chart = document.getElementById("chart");
         while (chart.firstChild) chart.removeChild(chart.firstChild);
 
+        var zoom = d3.zoom()
+            .scaleExtent([1, 5])
+            .translateExtent([[-width / 4, -height / 4], [width * 1.25, height * 1.25]])
+            .on("zoom", () => {                
+                const t = d3.event.transform
+                container.attr("transform", `translate(${t.x},${t.y})scale(${t.k})`);
+            });
+        
         const svg = d3.select("#chart")
             .append("svg")
             .attr("width", width)
-            .attr("height", height);
+            .attr("height", height)
+            .attr("viewBox", `0 0 ${width} ${height}`)
+            .call(zoom)
 
         const svg_box = svg.node().getBoundingClientRect()
+
+        var container = svg.append("g")
+            .attr("id", "container")
+            .attr("transform", "translate(0,0)scale(1,1)");
 
         const xScale = d3.scaleLinear()
             .domain(generate_domain(d => d.cx))
@@ -53,7 +68,7 @@
             .attr("class", "tooltip")
             .style("opacity", 0);
 
-        svg.append("g")
+        container.append("g")
             .selectAll("line")
             .data(LINKSET)
             .enter()
@@ -63,7 +78,7 @@
             .attr("x2", d => xScale(d[1]['x']))
             .attr("y2", d => yScale(d[1]['y']))
 
-        svg.append("g")
+        container.append("g")
             .selectAll("circle")
             .data(DATASET)
             .enter()
@@ -75,15 +90,14 @@
             .attr("cy", d => yScale(d.cy))
             .attr("r", d => rScale(d.r))
             .attr("fill", d => cScale(d.pop))
-            .on("mouseover", d => {
+            .on("mouseenter", d => {
                 div.html(`<strong>${d.id}</strong>`)
-                const top = (yScale(d["cy"]) + svg_box.top - rScale(d["r"]) - div.node().offsetHeight)
-                const left = (xScale(d["cx"]) + svg_box.left - (div.node().offsetWidth / (svg_box.width / xScale(d["cx"]))))
-                div.style("top", `${top}px`)
-                    .style("left", `${left}px`)
-                    .style("opacity", 1)
+                const rect = d3.event.target.getBoundingClientRect()
+                const top = rect.top - div.node().offsetHeight 
+                const left = (rect.left + rect.width / 2) - div.node().offsetWidth / (svg_box.width / rect.left)
+                div.style("top", `${top}px`).style("left", `${left}px`).style("opacity", 1)
             })
-            .on("mouseout", () => div.style("opacity", 0));
+            .on("mouseout", () => div.style("opacity", 0))
     };
     window.addEventListener('resize', drawPage);
 })()

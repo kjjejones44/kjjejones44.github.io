@@ -4,17 +4,11 @@
 
   body {
       box-sizing: border-box;
-      margin: 0px;
-      padding: 0px;
       font-family: Arial, sans-serif;
       text-align: center;
       background-color: grey;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 100vw;
-      height: 100vh;
-      flex-direction: column;
+      margin: 0px;
+      padding: 0px;
   }
 
   text {
@@ -22,12 +16,20 @@
       font-weight: bold;
   }
 
+  #container { 
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100vw;
+    height: 100vh;
+    display: flex;}
+
   #chart {
       background-color: white;
       border-radius: 1vh 1vh 0 0;
-      margin: 1vh;
+      margin: auto;
       box-shadow: 0 0 10px black;
-      border-top: 1vh solid var(--accent)
+      border-top: 1vh solid var(--accent);
   }
 
   div.tooltip {
@@ -42,7 +44,8 @@
   }
 
   svg {
-      shape-rendering: geometricPrecision
+      shape-rendering: geometricPrecision;
+      display: block;
   }
 
   circle {
